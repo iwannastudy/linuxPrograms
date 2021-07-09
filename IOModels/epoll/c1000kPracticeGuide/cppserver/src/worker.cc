@@ -2,12 +2,12 @@
 
 extern PFDITEM gFDITEM[MAX_FD];
 int process_connection(int worker_epollfd, char *buffer, int &received,
-                  TIMER *timerlink);
+                  TIMER *timer);
 
-int readfun_getConnections(int worker_epollfd, int orderfd, TIMER *timerlink) 
+int readfun_getConnections(int worker_epollfd, int sockfd, TIMER *timer) 
 {
     assert(worker_epollfd != 0);
-    assert(orderfd != 0);
+    assert(sockfd != 0);
     char buffer[10 * 1024] = {0}; //2.5k fd
     int received = 0;
     int rest = 0;
@@ -15,11 +15,11 @@ int readfun_getConnections(int worker_epollfd, int orderfd, TIMER *timerlink)
     {
         rest = sizeof(buffer) - received;
 
-        int count = recv(orderfd, buffer + received, rest, 0);
+        int count = recv(sockfd, buffer + received, rest, 0);
         if (count > 0 && ((size_t)(received + count) >= sizeof(int)))  // received at least 1 fd
         {
             received += count;
-            process_connection(worker_epollfd, buffer, received, timerlink);
+            process_connection(worker_epollfd, buffer, received, timer);
         }
         else if (count == -1 && errno == EAGAIN)
         {
@@ -35,7 +35,7 @@ int readfun_getConnections(int worker_epollfd, int orderfd, TIMER *timerlink)
     return 1;
 }
 
-int process_connection(int worker_epollfd, char *buffer, int &received, TIMER *timerlink) 
+int process_connection(int worker_epollfd, char *buffer, int &received, TIMER *timer) 
 {
     unsigned int processed = 0;
     struct epoll_event ev = {0};
@@ -63,7 +63,7 @@ int process_connection(int worker_epollfd, char *buffer, int &received, TIMER *t
             }
             else
             {
-                timerlink->add_timer(gFDITEM[*pFd], timeStamp + 10 * 1000);  // 10s timer
+                timer->add_timer(gFDITEM[*pFd], timeStamp + 10 * 1000);  // 10s timer
             }
         }
         else
