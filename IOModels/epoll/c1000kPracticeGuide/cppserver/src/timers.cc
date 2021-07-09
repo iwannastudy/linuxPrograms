@@ -12,17 +12,17 @@ TimeValue getNowTimeStamp()
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
-int TIMER::add_timer(void *arg, TimeValue timeStamp)
+int TIMER::add_timer(void *fditem, TimeValue timeStamp)
 {
-    timer_time_arg.insert(std::make_pair(timeStamp, arg));
-    timer_arg_time.insert(std::make_pair(arg, timeStamp));
+    timer_time_arg.insert(std::make_pair(timeStamp, fditem));
+    timer_arg_time.insert(std::make_pair(fditem, timeStamp));
     return 0;
 }
 
 void *TIMER::get_timer(TimeValue timeStamp) 
 {
     std::multimap<TimeValue, void *>::iterator iter = timer_time_arg.begin();
-    void *arg = iter->second;
+    void *fditem = iter->second;
 
     if (iter == timer_time_arg.end()) 
     {
@@ -38,8 +38,8 @@ void *TIMER::get_timer(TimeValue timeStamp)
 
     std::multimap<void *, TimeValue>::iterator pos_arg_time;
 
-    for (pos_arg_time = timer_arg_time.lower_bound(arg);
-         pos_arg_time != timer_arg_time.upper_bound(arg); ++pos_arg_time) 
+    for (pos_arg_time = timer_arg_time.lower_bound(fditem);
+         pos_arg_time != timer_arg_time.upper_bound(fditem); ++pos_arg_time) 
     {
         if (pos_arg_time->second == iter->first) 
         {
@@ -59,19 +59,19 @@ void TIMER::show() const
     printf("arg_time %zu   time_arg %zu \n", timer_arg_time.size(),
            timer_time_arg.size());
 }
-void TIMER::remove_timer(void *arg)
+void TIMER::remove_timer(void *fditem)
 {
 
     std::multimap<void *, TimeValue>::iterator pos_arg_time;
-    for (pos_arg_time = timer_arg_time.lower_bound(arg);
-         pos_arg_time != timer_arg_time.upper_bound(arg);)
+    for (pos_arg_time = timer_arg_time.lower_bound(fditem);
+         pos_arg_time != timer_arg_time.upper_bound(fditem);)
     {
         std::multimap<TimeValue, void *>::iterator iter;
         TimeValue t = pos_arg_time->second;
         for (iter = timer_time_arg.lower_bound(t);
              iter != timer_time_arg.upper_bound(t);)
         {
-            if (iter->second == arg)
+            if (iter->second == fditem)
             {
                 timer_time_arg.erase(iter++);
             }

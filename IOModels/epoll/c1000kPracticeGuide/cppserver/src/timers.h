@@ -29,13 +29,13 @@ class TIMER     //TODO: signelton mode
     virtual ~TIMER() {}
 
     // add new timer
-    int add_timer(void *, TimeValue timeStamp);
+    int add_timer(void *fditem, TimeValue timeStamp);
 
     //
     void *get_timer(TimeValue timeStamp);
 
     // remove timer
-    void remove_timer(void *);
+    void remove_timer(void *fditem);
 
     TimeValue get_mintimer() const;
 

@@ -1,10 +1,10 @@
 #include "network.h"
 
 extern PFDITEM gFDITEM[MAX_FD];
-int process_order(int worker_epollfd, char *buffer, int &received,
+int process_connection(int worker_epollfd, char *buffer, int &received,
                   TIMER *timerlink);
 
-int order_readfun(int worker_epollfd, int orderfd, TIMER *timerlink) 
+int readfun_getConnections(int worker_epollfd, int orderfd, TIMER *timerlink) 
 {
     assert(worker_epollfd != 0);
     assert(orderfd != 0);
@@ -19,7 +19,7 @@ int order_readfun(int worker_epollfd, int orderfd, TIMER *timerlink)
         if (count > 0 && ((size_t)(received + count) >= sizeof(int)))  // received at least 1 fd
         {
             received += count;
-            process_order(worker_epollfd, buffer, received, timerlink);
+            process_connection(worker_epollfd, buffer, received, timerlink);
         }
         else if (count == -1 && errno == EAGAIN)
         {
@@ -35,7 +35,7 @@ int order_readfun(int worker_epollfd, int orderfd, TIMER *timerlink)
     return 1;
 }
 
-int process_order(int worker_epollfd, char *buffer, int &received, TIMER *timerlink) 
+int process_connection(int worker_epollfd, char *buffer, int &received, TIMER *timerlink) 
 {
     unsigned int processed = 0;
     struct epoll_event ev = {0};
@@ -102,7 +102,7 @@ void *worker_thread(void *arg)
     evlist = (struct epoll_event *)malloc(MAXEPOLLEVENT *
                                             sizeof(struct epoll_event));
     worker_epollfd = epoll_create(MAXEPOLLEVENT);
-    gFDITEM[args->orderfd]->m_readfun = order_readfun;
+    gFDITEM[args->orderfd]->m_readfun = readfun_getConnections;
     if (epoll_ctl(worker_epollfd, EPOLL_CTL_ADD, args->orderfd, &ev) == -1) 
     {
         perror("epoll_ctl: listen_sock");

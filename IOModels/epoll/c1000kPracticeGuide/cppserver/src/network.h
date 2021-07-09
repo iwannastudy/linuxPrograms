@@ -57,7 +57,7 @@ int client_writefun(int epoll, int fd, TIMER *timer);
 int client_closefun(int epoll, int fd, TIMER *timer);
 int client_timeoutfun(int epoll, int fd, TIMER *, TimeValue tnow);
 
-int order_readfun(int epoll, int listenfd, TIMER *);
+int readfun_getConnections(int epoll, int listenfd, TIMER *);
 
 struct WorkerThreadArgs {
     int orderfd;  // listen 线程会用这个发送fd过来
