@@ -12,13 +12,13 @@ include ../Makefile.inc
 # dependency checking.
 
 VPATH = inc
-FLAG += -Iinc
+INC_PATH += -Iinc
 #OBJ=error_functions.o get_num.o
 
 all:${TLPI_LIB}
 
 ${TLPI_LIB} : src/*.c ename.c.inc
-	$(CC) -c ${CFLAGS} ${FLAG}  src/*.c
+	$(CC) -c ${CFLAGS} ${INC_PATH}  src/*.c
 	$(RM) ${TLPI_LIB}
 	$(AR) rs ${TLPI_LIB} *.o
 
