@@ -1,16 +1,39 @@
 #include "etcp.h"
 
-SOCKET tcp_client(char *hname, char *sname)
+int main(int argc, char **argv)
 {
-    struct sockaddr_in peer;
-    SOCKET s;
+    ssize_t size;
+    char buf[100];
 
-    set_address(hname, sname, &peer, "tcp");
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if( !isvalidsock(s) )
-        error(1, errno, "socket call failed");
-    if( connect(s, (struct sockaddr *)&peer, sizeof(peer)) )
-        error(1, errno, "connect failed");
-    return s;
+    if(argc != 3)
+    {
+        printf("Please input correct parameters!\n");
+        return -1;
+    }
+    memcpy(buf, "hello", 6);
+
+    int client_socket = tcp_client(argv[1], argv[2]);
+
+    while(client_socket)
+    {
+        size = send(client_socket, buf, sizeof(buf), 0);
+        if(size<0)
+        {
+            perror("send");
+            exit(EXIT_FAILURE);
+        }
+
+        size = recv(client_socket, buf, sizeof(buf), 0);
+        if(size<0)
+        {
+            perror("recv");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("recv from server: %s\n", buf);
+    };
+    
+    printf("TCP client exit!!!\r\n");
+    EXIT(0);
 }
 

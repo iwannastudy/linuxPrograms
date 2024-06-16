@@ -1,35 +1,62 @@
 #include "etcp.h"
 
-SOCKET tcp_server(char *hname, char *sname)
+void server_run(int cskt, struct sockaddr_in paddr)
 {
-    struct sockaddr_in local;
-    //struct sockaddr_in peer;
-    //int peerlen;
-    //SOCKET s1;
-    SOCKET s;
-    const int on = 1;
+    ssize_t size;
+    char buf[100];
+    char clientInfo[NI_MAXHOST+NI_MAXSERV];
 
-    set_address(hname, sname, &local, "tcp");
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if( !isvalidsock(s) )
-        error(1, errno, "socket call failed");
-    if( setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) )
-        error(1, errno, "setsockopt failed");
-    if( bind(s, (struct sockaddr *)&local, sizeof(local)) )
-        error(1, errno, "bind failed");
-    if( listen(s, NLISTEN) )
-        error(1, errno, "listen failed");
-    return s;
+    inetAddressStr((struct sockaddr *)&paddr, sizeof(paddr), clientInfo, sizeof(clientInfo));
 
-    // do
-    // {
-    //     peerlen = sizeof(peer);
-    //     s1 = accept(s, (struct sockaddr *)&peer, &peerlen);
-    //     if( !isvalidsock(s1) )
-    //         error(1, errno, "accept failed");
-    //     server(s, &peer);
-    //     CLOSE(s1);
-    // }while(1);
-    //
-    // EXIT(0);
+    printf("Client %d: %s connecting.\n", cskt, clientInfo);
+
+    while(cskt)
+    {
+        size = recv(cskt, buf, sizeof(buf), 0);
+        if(size<0)
+        {
+            perror("recv");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("recv from client: %s\n", buf);
+
+        size = send(cskt, buf, sizeof(buf), 0);
+        if(size<0)
+        {
+            perror("send");
+            exit(EXIT_FAILURE);
+        }
+
+        
+    };
+}
+
+int main(int argc, char **argv)
+{
+    struct sockaddr_in peer;
+    int peerlen = 0;
+    int client_socket = -1;
+
+    if(argc != 2)
+    {
+        printf("Please input correct parameters!\n");
+        return -1;
+    }
+
+    int server_socket = tcp_server(NULL, argv[1]);
+    
+    while(server_socket)
+    {
+        peerlen = sizeof(peer);
+        client_socket = accept(server_socket, (struct sockaddr *)&peer, &peerlen);
+        if( !isvalidsock(client_socket) )
+            error(1, errno, "accept failed");
+
+        server_run(client_socket, peer);
+
+        CLOSE(client_socket);
+    };
+    
+    EXIT(0);
 }

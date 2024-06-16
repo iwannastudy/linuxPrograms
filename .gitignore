@@ -60,3 +60,9 @@ GTAGS
 *.orig
 *~
 \#*#
+
+# cmake files
+CMakeCache.txt
+*.cmake
+CMakeFiles
+CMakePresets.json

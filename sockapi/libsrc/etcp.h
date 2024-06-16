@@ -17,14 +17,18 @@
 #include <sys/types.h>
 #include "skel.h"
 
+typedef enum boolean
+{
+    false = 0,
+    true
+}bool;
+
 #define NLISTEN 128
-void set_address(char *host, char *port,
-                 struct sockaddr_in *sap, char *protocol);
+void set_address(char *host, char *port, struct sockaddr_in *sap, char *protocol);
 int tcp_server(char *host, char *port);
 int tcp_client(char *host, char *port);
 int udp_server(char *host, char *port);
-int udp_client(char *host, char *port,
-                  struct sockaddr_in *sap);
+int udp_client(char *host, char *port, struct sockaddr_in *sap);
 int readn(int fd, char *buf, size_t len);
 int writen(int fd, const char *buf, size_t len);
 int readvrec(int fd, char *buf, size_t len);

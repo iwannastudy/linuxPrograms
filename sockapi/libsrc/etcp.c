@@ -1,14 +1,6 @@
 #include "etcp.h"
 
-typedef enum boolean
-{
-    false = 0,
-    true
 
-}bool;
-
-static int inetPassiveSocket(const char *service, int type,
-                             socklen_t *addrlen, bool doListen, int backlog);
 
 void set_address(char *hname, char *sname,
                  struct sockaddr_in *sap, char *protocol)
@@ -126,7 +118,7 @@ int readvrec(int fd, char *bp, size_t len)
 int tcp_client(char *hname, char *sname)
 {
     struct sockaddr_in peer;
-    int s;
+    int s = -1;
 
     set_address(hname, sname, &peer, "tcp");
     s = socket(AF_INET, SOCK_STREAM, 0);
@@ -143,7 +135,7 @@ int tcp_server(char *hname, char *sname)
     //struct sockaddr_in peer;
     //int peerlen;
     //int s1;
-    int s;
+    int s = -1;
     const int on = 1;
 
     set_address(hname, sname, &local, "tcp");
@@ -174,7 +166,7 @@ int tcp_server(char *hname, char *sname)
 int udp_client(char *hname, char *sname,
                   struct sockaddr_in *sap)
 {
-    int s;
+    int s = -1;
 
     set_address(hname, sname, sap, "udp");
     s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -185,7 +177,7 @@ int udp_client(char *hname, char *sname,
 
 int udp_server(char *hname, char *sname)
 {
-    int s;
+    int s = -1;
     struct sockaddr_in local;
 
     set_address(hname, sname, &local, "udp");
@@ -278,8 +270,8 @@ int inetConnect(const char *host, const char *service, int type)
     return (rp == NULL) ? -1 : sfd;
 }
 
-static int                  // Public interfaces: inetBind() and inetListen()
-inetPassiveSocket(const char *service, int type, socklen_t *addrlen, bool doListen, int backlog)
+// Public interfaces: inetBind() and inetListen()
+static int inetPassiveSocket(const char *service, int type, socklen_t *addrlen, bool doListen, int backlog)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -352,14 +344,14 @@ int inetBind(const char *service, int type, socklen_t *addrlen)
 
 char *inetAddressStr(const struct sockaddr *addr, socklen_t addrlen, char *addrStr, int addrStrLen)
 {
-#ifndef _BSD_SOURCE
-#define _BSD_SOURCE     // To get NI_MAXHOST and NI_MAXSERV
-                        // definitions from <netdb.h>
-#endif
+    #ifndef _BSD_SOURCE
+    #define _BSD_SOURCE     // To get NI_MAXHOST and NI_MAXSERV
+                            // definitions from <netdb.h>
+    #endif
     char host[NI_MAXHOST], service[NI_MAXSERV];
 
     if(getnameinfo(addr, addrlen, host, NI_MAXHOST,
-                   service, NI_MAXSERV, NI_NUMERICSERV) == 0)
+                   service, NI_MAXSERV, NI_NUMERICHOST|NI_NUMERICSERV) == 0)
         snprintf(addrStr, addrStrLen, "(%s, %s)", host, service);
     else
         snprintf(addrStr, addrStrLen, "(?UNKNOWN?)");
